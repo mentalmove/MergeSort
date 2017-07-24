@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Merge Sort</title>
+        
+        <style type="text/css">
+            html, body {
+                margin: 0px;
+                font-family: Arial, Verdana;
+                font-size: 20px;
+                text-align: center;
+                background-color: #F8F8F8;
+            }
+            
+            .sector_left {
+                line-height: 2em;
+                float: left;
+                width: 50%;
+                background-color: #F4F8F8;
+            }
+            .sector_right {
+                line-height: 2em;
+                float: right;
+                width: 50%;
+                background-color: #F8F8F4;
+            }
+            .high_sector {
+                line-height: 2em;
+                background-color: #F7F6F7;
+            }
+        </style>
+        
+        <!--<script type="text/javascript" src="algorithm.js"></script>-->
+        
+    </head>
+    <body>
+        
+        <br>
+        
+        <script type="text/javascript">
+        
+            function create_indices (amount) {
+                
+                var source = [];
+                var target = [];
+                var i, random_index;
+
+                for ( i = 0; i < amount; i++ )
+                    source.push(i);
+
+                while ( source.length ) {
+                    random_index = Math.floor(Math.random() * source.length);
+                    target.push(source[random_index]);
+                    source.splice(random_index, 1);
+                }
+
+                return target;
+            }
+            
+            var colours = [ "red", "black" ];
+            var symbols = [ "&diams;", "&hearts;", "&spades;", "&clubs;" ];
+            var cards = [ "7", "8", "9", "10", "B", "D", "K", "A" ];
+            
+            var num_cards = symbols.length * cards.length;
+            
+            function return_card (index) {
+                var colour_index = parseInt(index / (num_cards / colours.length));
+                var symbol_index = parseInt(index / (num_cards / symbols.length));
+                var card_index = index % cards.length;
+                var card = "<span style='color: " + colours[colour_index] + "'>" + symbols[symbol_index] + cards[card_index] + "</span>";
+                return card;
+            }
+            function show_list (layer, first, small) {
+                var content = return_card(first.value);
+                var tmp = first.next;
+                var space = (small) ? "&nbsp;&nbsp;" : "&nbsp;";
+                while ( tmp ) {
+                    content += space + return_card(tmp.value);
+                    tmp = tmp.next;
+                }
+                var zone = document.createElement("div");
+                if ( small ) {
+                    zone.style.fontSize = "0.85em";
+                    zone.style.opacity = 0.5;
+                }
+                zone.innerHTML = content;
+                layer.appendChild(zone);
+            }
+            function show_merge_list (layer, first) {
+                var content;
+                if ( first.is_first )
+                    content = "&nbsp;" + "<span style='position: relative; top: -11px; background-color: #F4F8F8'>" + return_card(first.value) + "</span>";
+                else
+                    content = "&nbsp;" + "<span style='position: relative; top: 11px; background-color: #F8F8F4'>" + return_card(first.value) + "</span>";
+                var tmp = first.next;
+                while ( tmp ) {
+                    if ( tmp.is_first )
+                        content += "&nbsp;" + "<span style='position: relative; top: -11px; background-color: #F4F8F8'>" + return_card(tmp.value) + "</span>";
+                    else
+                        content += "&nbsp;" + "<span style='position: relative; top: 11px; background-color: #F8F8F4'>" + return_card(tmp.value) + "</span>";
+                    tmp = tmp.next;
+                }
+                
+                var merge_layer = document.createElement("div");
+                merge_layer.className = "high_sector";
+                merge_layer.innerHTML = content;
+                layer.appendChild(merge_layer);
+            }
+            
+            function create_container (the_value) {
+                var tmp = {};
+                tmp.value = the_value;
+                tmp.next = null;
+                return tmp;
+            }
+            function create_list (values) {
+                var first = create_container(values[0]);
+                var tmp = first;
+                var next;
+                for ( var i = 1; i < values.length; i++ ) {
+                    next = create_container(values[i]);
+                    tmp.next = next;
+                    tmp = next;
+                }
+                return first;
+            }
+            
+            function merge (first, second, layer) {
+                var to_return, alternative, tmp_alternative;
+                
+                var is_first;
+                var first_to_show, tmp_to_show, next_to_show;
+                
+                if ( first.value <= second.value ) {
+                    to_return = first;
+                    alternative = second;
+                    is_first = 1;
+                }
+                else {
+                    to_return = second;
+                    alternative = first;
+                    is_first = 0;
+                }
+                
+                first_to_show = create_container(to_return.value);
+                first_to_show.is_first = is_first;
+                tmp_to_show = first_to_show;
+                
+                var tmp = to_return;
+                
+                while ( alternative ) {
+                    while ( tmp.next && (!alternative || tmp.next.value <= alternative.value) ) {
+                        tmp = tmp.next;
+                        next_to_show = create_container(tmp.value);
+                        next_to_show.is_first = is_first;
+                        tmp_to_show.next = next_to_show;
+                        tmp_to_show = next_to_show;
+                    }
+                    tmp_alternative = tmp.next;
+                    tmp.next = alternative;
+                    tmp = alternative;
+                    alternative = tmp_alternative;
+                    
+                    is_first = 1 - is_first;
+                    next_to_show = create_container(tmp.value);
+                    next_to_show.is_first = is_first;
+                    tmp_to_show.next = next_to_show;
+                    tmp_to_show = next_to_show;
+                }
+                
+                while ( tmp.next ) {
+                    tmp = tmp.next;
+                    next_to_show = create_container(tmp.value);
+                    next_to_show.is_first = is_first;
+                    tmp_to_show.next = next_to_show;
+                    tmp_to_show = next_to_show;
+                }
+                
+                show_merge_list(layer, first_to_show);
+                
+                return to_return;
+            }
+            function merge_sort (first, amount, layer) {
+                
+                if ( !first.next )
+                    return first;
+                
+                var first_amount = Math.ceil( amount / 2 );
+                var second_amount = amount - first_amount;
+                
+                var counter = 1;
+                var tmp = first;
+                while ( counter < first_amount ) {
+                    tmp = tmp.next;
+                    counter++;
+                }
+                var second = tmp.next;
+                tmp.next = null;
+                
+                var left_layer = document.createElement("div");
+                left_layer.className = "sector_left";
+                layer.appendChild(left_layer);
+                
+                var right_layer = document.createElement("div");
+                right_layer.className = "sector_right";
+                layer.appendChild(right_layer);
+                
+                show_list(left_layer, first);
+                show_list(right_layer, second);
+                
+                first = merge_sort(first, first_amount, left_layer);
+                second = merge_sort(second, second_amount, right_layer);
+                layer.innerHTML += "<br><br>";
+                
+                var merged = merge(first, second, layer);
+                
+                show_list(layer, merged, true);
+                layer.innerHTML += "<br>";
+                
+                return merged;
+            }
+            
+            var values = create_indices(num_cards);
+            var first = create_list(values);
+            values = [];
+            
+            var layer = document.body;
+            
+            show_list(layer, first);
+            layer.innerHTML += "<br>";
+            
+            var sorted = merge_sort (first, num_cards, layer);
+            layer.innerHTML += "<br><br>";
+            show_list(layer, sorted);
+        
+        </script>
+        
+        <br>
+        
+    </body>
+</html>
