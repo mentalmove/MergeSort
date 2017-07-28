@@ -17,3 +17,8 @@ expected to be more left will be the starting point;
 the respective next element will be either the next element
 in the actual list or the next unregarded element
 in the other list.
+
+The original list will be split up in parts of
+equal size until the single lists will contain
+only one element: These are always well-sorted.  
+Each two sorted lists will be joined to one larger sorted list.
