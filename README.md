@@ -20,5 +20,5 @@ in the other list.
 
 The original list will be split up in parts of
 equal size until the single lists will contain
-only one element: These are always well-sorted.  
+only one element: These are always well-sorted. 
 Each two sorted lists will be joined to one larger sorted list.
